@@ -1,0 +1,14 @@
+<!--  наследуемся от шаблона default.html, который мы создавали ещё во времена flatpages -->
+{% extends 'flatpages/default.html' %}
+
+<!-- Название у нас будет proudcts -->
+{% block title %}
+New
+{% endblock title %}
+
+<!-- В контенте на странице мы выводим сам товар, айди которого было передано в адрес -->
+{% load custom_filters %}
+{% block content %}
+<h1>{{ new.name}}</h1>
+{{ new.description|censor}}
+{% endblock content %}

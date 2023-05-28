@@ -1,0 +1,126 @@
+
+<!--  наследуемся от шаблона default.html, который мы создавали ещё во времена flatpages -->
+{% extends 'flatpages/default.html' %}
+
+<!-- Название у нас будет News -->
+{% block title %}
+News
+{% endblock title %}
+
+{% load custom_filters %}
+
+{% block content %}
+
+<!-- Перед таблицей добавим форму для поиска -->
+<form method="GET">
+    {{ filter.form }} <!-- Форму от фильтров за нас сделает Django. А вот кнопку, увы, придётся делать самому -->
+    <input type="submit" value="Найти">
+</form>
+
+
+    <h1>Все новости</h1>
+
+    <p>Новостей всего {{ news|length }}</p>
+
+    <h3>{{ time_now|date:'M d Y' }}</h3> <!-- Здесь мы применяем фильтр date. Он очень похож на метод strftime у даты. С его помощью мы можем выводить дату в нужном нам формате -->
+
+    <hr>
+
+<!--КОД СО СТРАНИЦЫ - ХЗ-->
+<table>
+    <thead>
+        <th>
+            Name
+        </th>
+        <th>
+            Description
+        </th>
+
+        <th>
+            Category
+        </th>
+    </thead>
+    {% for product in filter.qs %} <!-- поменяем products на filter.qs, т.к. теперь мы забираем уже отобранную по каким-то параметрам информацию -->
+    <tr>
+        <td>
+            {{ product.name|title }}
+        </td>
+        <td>
+            {{ product.category.name|title }}
+        </td>
+        <td>
+            {{ product.description }}
+        </td>
+
+    </tr>
+    {% endfor %}
+</table>
+
+
+<!--КОД ПРЕДЫДУЩЕГО ДЗ-->
+    {% if news %} <!-- Если есть товары, то выводим таблицу с ними -->
+        <table>
+            <tr>
+                <td>
+                    Название
+                </td>
+                <td>
+                    Описание
+                </td>
+                <td>
+                    Категория
+                </td>
+
+            </tr>
+        {% for product in news %} <!-- Для каждого товара будете генерироваться новая строчка, т.е. новый html код. При этом сам цикл работает точно так же, как и в python. product — переменная цикла, т.е. наш товар, взятый из общего списка -->
+            <tr>
+                <td>
+
+                    {{ product.name|censor }} <!-- не забываем, что переменные в шаблоне ничем не отличаются от переменных в python. Здесь так же можно получать доступ к полям класса. Например, здесь мы выводим имя, в следующем столбце описание, и т.д.  -->
+                </td>
+                <td>
+
+                    {{ product.description|censor|truncatechars:50 }}
+                </td>
+                <td>
+                    {{ product.category.name }}
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+    {% else %}
+        <h2>Новостей нет!</h2>
+    {% endif %}
+
+
+
+<!--------------------->
+
+<!-- Проверяем что поддерживается постраничный вывод -->
+{% if is_paginated %}
+
+    {% if page_obj.has_previous %}
+        <a href="?page=1">First</a>
+        <a href="?page={{ page_obj.previous_page_number }}"><<<</a>
+    {% endif %}
+
+    {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+            <a>{{ num }}</a>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">>>></a>
+        <a href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+    {% endif %}
+
+{% endif %}
+
+
+
+
+
+{% endblock content %}
